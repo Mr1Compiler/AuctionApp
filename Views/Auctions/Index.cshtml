@@ -1,0 +1,96 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<AuctionApp.Areas.Identity.Data.AccountUser> UserManager
+@model IEnumerable<Lab2Auction.Models.Auction>
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+    string title = ViewData["Title"]?.ToString() ?? "Auctions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h1>@title</h1>
+@if (!Model.Any())
+{
+    <p style="color:darkred; font-weight:500; font-size:x-large; text-align:center">There are no Auctions available yet!</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.First().Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.First().Description)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.First().StartingPrice)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.First().EndDate)
+                </th>
+                @if (title != "My Auctions")
+                {
+                    <th>Owned by</th>
+                }
+                @if (title != "Won Auctions")
+                {
+                    <th>Actions</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.StartingPrice)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.EndDate)
+                    </td>
+                    @if (title != "My Auctions")
+                    {
+                        <td>
+                            @Html.DisplayFor(modelItem => item.UserEmail)
+                        </td>
+                    }
+                    <td>
+                        @if (title != "Won Auctions")
+                        {
+                            @if (title == "Browse Auctions")
+                            {
+                                <a asp-action="ListBids" asp-controller="Bids" asp-route-auctionId="@item.Id">Bidders</a>
+                                @if (item.UserId != currentUser?.Id && item.EndDate > DateTime.Now)
+                                {
+                                    <text>
+                                        | <a asp-action="Create" asp-controller="Bids" asp-route-auctionId="@item.Id">Add Bid</a>
+                                    </text>
+                                }
+                            }
+                            @if (title == "My Auctions")
+                            {
+                                <text>
+                                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                                    | <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                                    | <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                                </text>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@if (title == "Browse Auctions")
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Create New Auction</a>
+    </p>
+}
