@@ -1,8 +1,14 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4" style="color:blueviolet">Welcome to Auctions Management Project 4th Year</h1>
+    <h3> Design and Implementation of Distributed </h3>
+    <h3> Auction Web Application Using ASP.NET </h3>
+    <h3> By: ... &copy; 2024</h3>
+    <br /><br />
+    <h4 style="color:green">Active User: @ViewData["UserName"]</h4>
+    <h4>@DateTime.Now</h4>
+    <br />
+    <p> <a class="btn btn-primary" href="@Url.Action("Index", "Auctions")">Browse the List of Available Auctions</a> </p>
 </div>
