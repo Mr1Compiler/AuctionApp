@@ -22,10 +22,12 @@ namespace AuctionApp.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<AccountUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly UserManager<AccountUser> _userManager;
 
-        public LoginModel(SignInManager<AccountUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<AccountUser> signInManager, UserManager<AccountUser> userManager, ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -115,9 +117,25 @@ namespace AuctionApp.Areas.Identity.Pages.Account
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User logged in.");
+                    var user = await _userManager.FindByEmailAsync(Input.Email);
+
+                    if (await _userManager.IsInRoleAsync(user, "Admin"))
+                    {
+                        _logger.LogInformation("Admin user logged in.");
+                        return LocalRedirect("~/Admin/Dashboard");
+                    }
+
+                    // Automatically assign "User" role if not already in it
+                    if (!await _userManager.IsInRoleAsync(user, "User"))
+                    {
+                        await _userManager.AddToRoleAsync(user, "User");
+                    }
+
+                    _logger.LogInformation("Normal user logged in.");
                     return LocalRedirect(returnUrl);
                 }
+
+
                 if (result.RequiresTwoFactor)
                 {
                     return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });

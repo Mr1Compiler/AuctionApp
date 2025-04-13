@@ -2,30 +2,50 @@
 using Lab2Auction.Data;
 using Lab2Auction.Services;
 using AuctionApp.Areas.Identity.Data;
+using Microsoft.AspNetCore.Identity;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Register database contexts
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDbContextConnection")));
+
 builder.Services.AddDbContext<AuctionDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AuctionDbContextConnection")));
-builder.Services.AddDefaultIdentity<AccountUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<ApplicationDbContext>();
-// Add services to the container.
+
+// Identity with Roles
+builder.Services.AddDefaultIdentity<AccountUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true;
+})
+.AddRoles<IdentityRole>() // Enable role support
+.AddEntityFrameworkStores<ApplicationDbContext>();
+
+// MVC + Razor Pages
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-// Register AuctionService and BidService with the dependency injection container
+
+// App services
 builder.Services.AddScoped<IAuctionService, AuctionService>();
 builder.Services.AddScoped<IBidService, BidService>();
+
 var app = builder.Build();
-// Configure the HTTP request pipeline.
+
+// Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
 }
 app.UseStaticFiles();
 app.UseRouting();
+app.UseAuthentication();  // Required for Identity
 app.UseAuthorization();
+
+// Routing
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapRazorPages();
-app.Run();
 
+app.MapRazorPages();
+
+app.Run();

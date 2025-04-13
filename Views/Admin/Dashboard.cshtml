@@ -44,3 +44,20 @@ Quick Actions:
 [Go to Pending Auctions] [Manage Users]
 
 -->
+
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h1>Welcome to the Admin Dashboard</h1>
+
+<p>This is a test page to confirm that admin access is working.</p>
+
+<ul>
+    <li>Pending Auctions: <strong>5</strong></li>
+    <li>Total Users: <strong>20</strong></li>
+    <li>Blocked Users: <strong>2</strong></li>
+</ul>
+
+<p><a asp-controller="Home" asp-action="Index">Return to Site</a></p>
