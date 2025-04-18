@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
+using AuctionApp.Models;
 namespace Lab2Auction.Models
 {
     public class Auction
@@ -19,5 +20,7 @@ namespace Lab2Auction.Models
         public string? UserId { get; set; } // string reference to User ID
         public string? UserEmail { get; set; }
         public virtual ICollection<Bid> Bids { get; set; } = new List<Bid>();
-    }
+		public virtual ICollection<AuctionImage> Images { get; set; } = new List<AuctionImage>();
+
+	}
 }

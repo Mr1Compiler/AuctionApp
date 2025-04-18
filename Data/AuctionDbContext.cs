@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Lab2Auction.Models;
+using AuctionApp.Models;
 namespace Lab2Auction.Data
 {
 	public class AuctionDbContext : DbContext
@@ -10,6 +11,7 @@ namespace Lab2Auction.Data
 		}
 		public DbSet<Lab2Auction.Models.Auction> Auction { get; set; } = default!;
 		public DbSet<Lab2Auction.Models.Bid> Bid { get; set; } = default!;
+		public ICollection<AuctionImage> Images { get; set; } = new List<AuctionImage>();
 
 		protected override void OnModelCreating(ModelBuilder builder)
 		{
