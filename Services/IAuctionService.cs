@@ -9,6 +9,8 @@ namespace Lab2Auction.Services
         Task<List<Auction>> GetAuctionsByUserIdAsync(string userId);
         Task<bool> UpdateAuctionAsync(AuctionEditModel updatedAuction, string userId);
         Task<bool> DeleteAuctionAsync(int auctionId, string userId);
-        Task<List<Auction>> GetWonAuctionsByUserIdAsync(string userId);
-    }
+		Task<bool> SellAuctionAsync(int auctionId, string userId);
+		Task<List<Auction>> GetWonAuctionsByUserIdAsync(string userId);
+		Task<bool> SellAuctionToBidderAsync(int auctionId, int bidId, string userId);
+	}
 }

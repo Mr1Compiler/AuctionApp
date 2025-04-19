@@ -3,13 +3,13 @@ using Lab2Auction.Models;
 using Microsoft.EntityFrameworkCore;
 namespace Lab2Auction.Services
 {
-    public class AuctionService : IAuctionService
-    {
-        private readonly AuctionDbContext _auctionContext;
-        public AuctionService(AuctionDbContext auctionContext)
-        {
-            _auctionContext = auctionContext;
-        }
+	public class AuctionService : IAuctionService
+	{
+		private readonly AuctionDbContext _auctionContext;
+		public AuctionService(AuctionDbContext auctionContext)
+		{
+			_auctionContext = auctionContext;
+		}
 
 		public async Task<List<Auction>> GetOngoingAuctionsAsync()
 		{
@@ -30,11 +30,11 @@ namespace Lab2Auction.Services
 
 
 		public async Task<Auction> CreateAuctionAsync(Auction auction)
-        {
-            _auctionContext.Add(auction);
-            await _auctionContext.SaveChangesAsync();
-            return auction;
-        }
+		{
+			_auctionContext.Add(auction);
+			await _auctionContext.SaveChangesAsync();
+			return auction;
+		}
 
 		public async Task<List<Auction>> GetAuctionsByUserIdAsync(string userId)
 		{
@@ -46,43 +46,78 @@ namespace Lab2Auction.Services
 		}
 
 		public async Task<bool> UpdateAuctionAsync(AuctionEditModel updatedAuction, string userId)
-        {
-            var auction = await _auctionContext.Auction
-                .Where(a => a.Id == updatedAuction.Id && a.UserId == userId)
-                .SingleOrDefaultAsync();
-            if (auction == null || auction.EndDate <= DateTime.Now)
-            {
-                return false;
-            }
-            auction.Description = updatedAuction.Description;
-            _auctionContext.Update(auction);
-            await _auctionContext.SaveChangesAsync();
-            return true;
-        }
+		{
+			var auction = await _auctionContext.Auction
+				.Where(a => a.Id == updatedAuction.Id && a.UserId == userId)
+				.SingleOrDefaultAsync();
+			if (auction == null || auction.EndDate <= DateTime.Now)
+			{
+				return false;
+			}
+			auction.Description = updatedAuction.Description;
+			_auctionContext.Update(auction);
+			await _auctionContext.SaveChangesAsync();
+			return true;
+		}
 
-        public async Task<bool> DeleteAuctionAsync(int auctionId, string userId)
-        {
-            var auction = await _auctionContext.Auction
-                .Where(a => a.Id == auctionId && a.UserId == userId)
-                .SingleOrDefaultAsync();
-            if (auction == null)
-            {
-                return false;
-            }
-            _auctionContext.Auction.Remove(auction);
-            await _auctionContext.SaveChangesAsync();
-            return true;
-        }
+		public async Task<bool> DeleteAuctionAsync(int auctionId, string userId)
+		{
+			var auction = await _auctionContext.Auction
+				.Where(a => a.Id == auctionId && a.UserId == userId)
+				.SingleOrDefaultAsync();
+			if (auction == null)
+			{
+				return false;
+			}
+			_auctionContext.Auction.Remove(auction);
+			await _auctionContext.SaveChangesAsync();
+			return true;
+		}
 
-        public async Task<List<Auction>> GetWonAuctionsByUserIdAsync(string userId)
-        {
-            return await _auctionContext.Auction
-                .Include(a => a.Bids)
-                .Where(a => a.EndDate <= DateTime.Now &&
-                            a.Bids.Any(b => b.UserId == userId) &&
-                            a.Bids.OrderByDescending(b => b.Amount).FirstOrDefault().UserId == userId)
-                .OrderByDescending(a => a.EndDate)
-                .ToListAsync();
-        }
-    }
+		public async Task<List<Auction>> GetWonAuctionsByUserIdAsync(string userId)
+		{
+			return await _auctionContext.Auction
+				.Include(a => a.Bids)
+				.Where(a => a.EndDate <= DateTime.Now &&
+							a.Bids.Any(b => b.UserId == userId) &&
+							a.Bids.OrderByDescending(b => b.Amount).FirstOrDefault().UserId == userId)
+				.OrderByDescending(a => a.EndDate)
+				.ToListAsync();
+		}
+
+		public async Task<bool> SellAuctionAsync(int auctionId, string userId)
+		{
+			var auction = await _auctionContext.Auction
+				.Include(a => a.Bids)
+				.FirstOrDefaultAsync(a => a.Id == auctionId && a.UserId == userId);
+
+			if (auction == null || auction.EndDate > DateTime.Now || auction.IsSold || !auction.Bids.Any())
+				return false;
+
+			auction.IsSold = true;
+			await _auctionContext.SaveChangesAsync();
+			return true;
+		}
+
+		public async Task<bool> SellAuctionToBidderAsync(int auctionId, int bidId, string userId)
+		{
+			var auction = await _auctionContext.Auction
+				.Include(a => a.Bids)
+				.FirstOrDefaultAsync(a => a.Id == auctionId && a.UserId == userId);
+
+			if (auction == null || auction.IsSold)
+				return false;
+
+			var bid = auction.Bids.FirstOrDefault(b => b.Id == bidId);
+			if (bid == null)
+				return false;
+
+			auction.IsSold = true;
+			// Optional: auction.WinningBidId = bidId;  <-- if you track this
+
+			await _auctionContext.SaveChangesAsync();
+			return true;
+		}
+
+	}
 }

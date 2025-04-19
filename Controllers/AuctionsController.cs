@@ -212,5 +212,23 @@ namespace Lab2Auction.Controllers
 		{
 			return (_auctionContext.Auction?.Any(e => e.Id == id)).GetValueOrDefault();
 		}
+
+
+		// In BidsController.cs
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> SellToBidder(int auctionId, int bidId)
+		{
+			var userId = _userManager.GetUserId(User);
+			var success = await _auctionService.SellAuctionToBidderAsync(auctionId, bidId, userId);
+
+			if (!success)
+			{
+				return BadRequest(); // or show message
+			}
+
+			return RedirectToAction("ListBids", new { auctionId = auctionId });
+		}
+
 	}
 }

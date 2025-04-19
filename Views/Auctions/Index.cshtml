@@ -22,12 +22,19 @@ else
         @foreach (var item in Model)
         {
             <div class="col">
-                <div class="card h-100 shadow-sm border-0">
-                    <img src="@(item.Images?.FirstOrDefault()?.ImagePath ?? "/images/Default.png")"
-                         class="card-img-top"
-                         style="height: 220px; width: 100%; object-fit: cover; border-top-left-radius: .5rem; border-top-right-radius: .5rem;"
-                         alt="Auction Image"
-                         onerror="this.onerror=null;this.src='/images/Default.png';" />
+                <div class="card h-100 shadow-sm border-0 position-relative">
+                    @* SOLD badge *@
+                    @if (item.IsSold)
+                    {
+                        <span class="position-absolute top-0 end-0 m-2 badge bg-success">SOLD</span>
+                    }
+
+                    <div style="height: 220px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <img src="@(item.Images?.FirstOrDefault()?.ImagePath ?? "/images/Default.png")"
+                             style="max-height: 100%; max-width: 100%; object-fit: contain;"
+                             alt="Auction Image"
+                             onerror="this.onerror=null;this.src='/images/Default.png';" />
+                    </div>
 
 
 
@@ -38,15 +45,29 @@ else
                         <p><strong>Ends:</strong> @item.EndDate.ToString("yyyy-MM-dd hh:mm tt")</p>
                     </div>
 
-                    <div class="card-footer d-flex justify-content-between align-items-center bg-white border-top">
-                        <small class="text-muted">By: @item.UserEmail</small>
-                        <div class="btn-group">
+                    <div class="card-footer d-flex flex-column flex-sm-row justify-content-between align-items-sm-center">
+                        <small class="text-muted mb-2 mb-sm-0">By: @item.UserEmail</small>
+
+                        <div class="d-flex flex-wrap gap-1">
                             <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">View</a>
                             <a asp-action="ListBids" asp-controller="Bids" asp-route-auctionId="@item.Id" class="btn btn-sm btn-outline-secondary">Bidders</a>
 
-                            @if (title == "Browse Auctions" && item.UserId != currentUser?.Id && item.EndDate > DateTime.Now)
+                            @if (title == "Browse Auctions" && item.UserId != currentUser?.Id && item.EndDate > DateTime.Now && !item.IsSold)
                             {
                                 <a asp-action="Create" asp-controller="Bids" asp-route-auctionId="@item.Id" class="btn btn-sm btn-success">Bid</a>
+                            }
+
+                            @if (title == "My Auctions")
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning text-white">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+
+                                @if (!item.IsSold && item.EndDate <= DateTime.Now && item.Bids?.Any() == true)
+                                {
+                                    <form asp-action="Sell" asp-route-id="@item.Id" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-warning">Sell</button>
+                                    </form>
+                                }
                             }
                         </div>
                     </div>
@@ -58,7 +79,7 @@ else
 
 @if (title == "Browse Auctions")
 {
-    <div class="text-center mt-4">
-        <a asp-action="Create" class="btn btn-lg btn-primary">Create New Auction</a>
+    <div class="mt-4 text-center">
+        <a asp-action="Create" class="btn btn-primary">Create New Auction</a>
     </div>
 }
