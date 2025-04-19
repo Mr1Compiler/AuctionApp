@@ -50,14 +50,12 @@
     @if (Model.Images != null && Model.Images.Any())
     {
         <h4>Photos</h4>
-        <div class="d-flex flex-wrap gap-3">
+        <div class="row">
             @foreach (var image in Model.Images)
             {
-                <img src="@image.ImagePath"
-                     alt="Auction Image"
-                     width="150"
-                     height="150"
-                     style="object-fit: cover; border-radius: 8px; border: 1px solid #ccc;" />
+                <div class="col-md-4 mb-3">
+                    <img src="@image.ImagePath" class="img-fluid rounded border shadow-sm" alt="Auction Image" />
+                </div>
             }
         </div>
     }

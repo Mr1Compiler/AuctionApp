@@ -11,13 +11,14 @@ namespace Lab2Auction.Services
             _auctionContext = auctionContext;
         }
 
-        public async Task<List<Auction>> GetOngoingAuctionsAsync()
-        {
-            return await _auctionContext.Auction
-                .Where(a => a.EndDate > DateTime.Now)
-                .OrderBy(a => a.EndDate)
-                .ToListAsync();
-        }
+		public async Task<List<Auction>> GetOngoingAuctionsAsync()
+		{
+			return await _auctionContext.Auction
+				.Include(a => a.Images) // ✅ include images
+				.Where(a => a.EndDate > DateTime.Now)
+				.OrderBy(a => a.EndDate)
+				.ToListAsync();
+		}
 
 		public async Task<Auction> GetAuctionDetailsAsync(int auctionId)
 		{
