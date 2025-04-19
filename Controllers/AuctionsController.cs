@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using AuctionApp.Areas.Identity.Data;
 using AuctionApp.Models;
 using AuctionApp.ViewModels;
+using Microsoft.EntityFrameworkCore;
 namespace Lab2Auction.Controllers
 {
 	[Authorize]
@@ -28,6 +29,16 @@ namespace Lab2Auction.Controllers
 			ViewData["Title"] = "Browse Auctions";
 			return View(ongoingAuctions);
 		}
+
+		public async Task<Auction?> GetAuctionDetailsAsync(int auctionId)
+		{
+			return await _auctionContext.Auction
+				.Include(a => a.Images) // ✅ This includes the images
+				.FirstOrDefaultAsync(a => a.Id == auctionId);
+		}
+
+
+
 		// GET: Auctions / details / 5
 		public async Task<IActionResult> Details(int? id)
 		{

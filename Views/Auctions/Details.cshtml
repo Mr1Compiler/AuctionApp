@@ -1,9 +1,12 @@
 ﻿@model Lab2Auction.Models.Auction
+
 @{
     ViewData["Title"] = "Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <h1>Details</h1>
+
 <div>
     <h4>Auction</h4>
     <hr />
@@ -14,24 +17,28 @@
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
+
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Description)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
+
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.StartingPrice)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.StartingPrice)
         </dd>
+
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.EndDate)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.EndDate)
         </dd>
+
         <dt class="col-sm-2">
             Owned by
         </dt>
@@ -39,7 +46,29 @@
             @Html.DisplayFor(model => model.UserEmail)
         </dd>
     </dl>
+
+    @if (Model.Images != null && Model.Images.Any())
+    {
+        <h4>Photos</h4>
+        <div class="d-flex flex-wrap gap-3">
+            @foreach (var image in Model.Images)
+            {
+                <img src="@image.ImagePath"
+                     alt="Auction Image"
+                     width="150"
+                     height="150"
+                     style="object-fit: cover; border-radius: 8px; border: 1px solid #ccc;" />
+            }
+        </div>
+    }
+    else
+    {
+        <p><em>No images uploaded for this auction.</em></p>
+    }
 </div>
+
+<br />
 <div>
     <a asp-action="Index" class="btn btn-info">Back to List</a>
 </div>
+

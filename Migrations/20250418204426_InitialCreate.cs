@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace AuctionApp.Migrations.AuctionDb
+namespace AuctionApp.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -30,6 +30,26 @@ namespace AuctionApp.Migrations.AuctionDb
                 });
 
             migrationBuilder.CreateTable(
+                name: "AuctionImages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AuctionId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuctionImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AuctionImages_Auction_AuctionId",
+                        column: x => x.AuctionId,
+                        principalTable: "Auction",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Bid",
                 columns: table => new
                 {
@@ -53,6 +73,11 @@ namespace AuctionApp.Migrations.AuctionDb
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AuctionImages_AuctionId",
+                table: "AuctionImages",
+                column: "AuctionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Bid_AuctionId",
                 table: "Bid",
                 column: "AuctionId");
@@ -61,6 +86,9 @@ namespace AuctionApp.Migrations.AuctionDb
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AuctionImages");
+
             migrationBuilder.DropTable(
                 name: "Bid");
 

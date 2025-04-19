@@ -21,6 +21,5 @@ namespace Lab2Auction.Models
         public string? UserEmail { get; set; }
         public virtual ICollection<Bid> Bids { get; set; } = new List<Bid>();
 		public virtual ICollection<AuctionImage> Images { get; set; } = new List<AuctionImage>();
-
 	}
 }

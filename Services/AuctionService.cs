@@ -19,14 +19,16 @@ namespace Lab2Auction.Services
                 .ToListAsync();
         }
 
-        public async Task<Auction> GetAuctionDetailsAsync(int auctionId)
-        {
-            return await _auctionContext.Auction
-                .Include(a => a.Bids.OrderByDescending(b => b.Amount)) // Include and sort bids
-                .FirstOrDefaultAsync(m => m.Id == auctionId && m.EndDate > DateTime.Now); // Ensure auction is ongoing
-        }
+		public async Task<Auction> GetAuctionDetailsAsync(int auctionId)
+		{
+			return await _auctionContext.Auction
+				.Include(a => a.Bids.OrderByDescending(b => b.Amount))
+				.Include(a => a.Images) // ✅ include images
+				.FirstOrDefaultAsync(m => m.Id == auctionId); // ❌ removed the EndDate filter
+		}
 
-        public async Task<Auction> CreateAuctionAsync(Auction auction)
+
+		public async Task<Auction> CreateAuctionAsync(Auction auction)
         {
             _auctionContext.Add(auction);
             await _auctionContext.SaveChangesAsync();
