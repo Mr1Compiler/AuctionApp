@@ -8,100 +8,57 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>@title</h1>
+<h1 class="mb-4">@title</h1>
 
 @if (!Model.Any())
 {
-    <p style="color:darkred; font-weight:500; font-size:x-large; text-align:center">
+    <div class="alert alert-warning text-center fs-5">
         There are no Auctions available yet!
-    </p>
+    </div>
 }
 else
 {
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>@Html.DisplayNameFor(model => model.First().Name)</th>
-                <th>Image</th>
-                <th>@Html.DisplayNameFor(model => model.First().Description)</th>
-                <th>@Html.DisplayNameFor(model => model.First().StartingPrice)</th>
-                <th>@Html.DisplayNameFor(model => model.First().EndDate)</th>
-                @if (title != "My Auctions")
-                {
-                    <th>Owned by</th>
-                }
-                @if (title != "Won Auctions")
-                {
-                    <th>Actions</th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@Html.DisplayFor(modelItem => item.Name)</td>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <img src="@(item.Images?.FirstOrDefault()?.ImagePath ?? "/images/Default.png")"
+                         class="card-img-top"
+                         style="height: 220px; width: 100%; object-fit: cover; border-top-left-radius: .5rem; border-top-right-radius: .5rem;"
+                         alt="Auction Image"
+                         onerror="this.onerror=null;this.src='/images/Default.png';" />
 
-                    <td>
-                        @if (item.Images?.Any() == true)
-                        {
-                            <img src="@item.Images.First().ImagePath"
-                                 alt="Auction Image"
-                                 width="60" height="60"
-                                 style="object-fit: cover; border-radius: 4px;" />
-                        }
-                        else
-                        {
-                            <span>No image</span>
-                        }
-                    </td>
 
-                    <td>@Html.DisplayFor(modelItem => item.Description)</td>
-                    <td>@Html.DisplayFor(modelItem => item.StartingPrice)</td>
-                    <td>@Html.DisplayFor(modelItem => item.EndDate)</td>
 
-                    @if (title != "My Auctions")
-                    {
-                        <td>@Html.DisplayFor(modelItem => item.UserEmail)</td>
-                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Name</h5>
+                        <p class="card-text text-muted">@item.Description</p>
+                        <p><strong>Price:</strong> $@item.StartingPrice</p>
+                        <p><strong>Ends:</strong> @item.EndDate.ToString("yyyy-MM-dd hh:mm tt")</p>
+                    </div>
 
-                    <td>
-                        @if (title != "Won Auctions")
-                        {
-                            @if (title == "Browse Auctions")
+                    <div class="card-footer d-flex justify-content-between align-items-center bg-white border-top">
+                        <small class="text-muted">By: @item.UserEmail</small>
+                        <div class="btn-group">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">View</a>
+                            <a asp-action="ListBids" asp-controller="Bids" asp-route-auctionId="@item.Id" class="btn btn-sm btn-outline-secondary">Bidders</a>
+
+                            @if (title == "Browse Auctions" && item.UserId != currentUser?.Id && item.EndDate > DateTime.Now)
                             {
-                                <text>
-                                    <a asp-action="Details" asp-controller="Auctions" asp-route-id="@item.Id">View</a> |
-                                    <a asp-action="ListBids" asp-controller="Bids" asp-route-auctionId="@item.Id">Bidders</a>
-                                    @if (item.UserId != currentUser?.Id && item.EndDate > DateTime.Now)
-                                    {
-                                        <text> | <a asp-action="Create" asp-controller="Bids" asp-route-auctionId="@item.Id">Add Bid</a></text>
-                                    }
-
-                                </text>
+                                <a asp-action="Create" asp-controller="Bids" asp-route-auctionId="@item.Id" class="btn btn-sm btn-success">Bid</a>
                             }
-
-
-                            @if (title == "My Auctions")
-                            {
-                                <text>
-                                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                                </text>
-                            }
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 }
 
 @if (title == "Browse Auctions")
 {
-    <p>
-        <a asp-action="Create" class="btn btn-primary">Create New Auction</a>
-    </p>
+    <div class="text-center mt-4">
+        <a asp-action="Create" class="btn btn-lg btn-primary">Create New Auction</a>
+    </div>
 }
-

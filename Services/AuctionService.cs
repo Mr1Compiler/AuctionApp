@@ -36,15 +36,16 @@ namespace Lab2Auction.Services
             return auction;
         }
 
-        public async Task<List<Auction>> GetAuctionsByUserIdAsync(string userId)
-        {
-            return await _auctionContext.Auction
-                .Where(a => a.UserId == userId && a.EndDate > DateTime.Now)
-                .OrderByDescending(a => a.EndDate)
-                .ToListAsync();
-        }
+		public async Task<List<Auction>> GetAuctionsByUserIdAsync(string userId)
+		{
+			return await _auctionContext.Auction
+				.Include(a => a.Images) // <-- Include this line!
+				.Where(a => a.UserId == userId && a.EndDate > DateTime.Now)
+				.OrderByDescending(a => a.EndDate)
+				.ToListAsync();
+		}
 
-        public async Task<bool> UpdateAuctionAsync(AuctionEditModel updatedAuction, string userId)
+		public async Task<bool> UpdateAuctionAsync(AuctionEditModel updatedAuction, string userId)
         {
             var auction = await _auctionContext.Auction
                 .Where(a => a.Id == updatedAuction.Id && a.UserId == userId)

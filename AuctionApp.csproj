@@ -20,7 +20,6 @@
   <ItemGroup>
     <Folder Include="Migrations\AuctionDb\" />
     <Folder Include="Migrations\UserDb\" />
-    <Folder Include="NewFolder\" />
     <Folder Include="wwwroot\images\auctions\" />
   </ItemGroup>
 
