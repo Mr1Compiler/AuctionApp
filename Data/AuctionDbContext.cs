@@ -20,6 +20,7 @@ namespace Lab2Auction.Data
 				.WithMany(a => a.Bids)     // An Auction can have many Bids
 				.HasForeignKey(b => b.AuctionId)
 				.OnDelete(DeleteBehavior.Cascade); // to cascade delete Bids when an Auction is deleted
+
 		}
 	}
 }

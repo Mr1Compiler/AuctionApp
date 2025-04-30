@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuctionApp.Migrations.AuctionDb
 {
     [DbContext(typeof(AuctionDbContext))]
-    [Migration("20241206182736_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250430123648_AddAuctionStatus")]
+    partial class AddAuctionStatus
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,6 +46,9 @@ namespace AuctionApp.Migrations.AuctionDb
 
                     b.Property<decimal>("StartingPrice")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("UserEmail")
                         .HasColumnType("nvarchar(max)");

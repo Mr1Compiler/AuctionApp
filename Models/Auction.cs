@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
+using AuctionApp.Enums;
 namespace Lab2Auction.Models
 {
     public class Auction
@@ -18,6 +19,7 @@ namespace Lab2Auction.Models
         public DateTime EndDate { get; set; }
         public string? UserId { get; set; } // string reference to User ID
         public string? UserEmail { get; set; }
+        public AuctionStatus Status { get; set; } = AuctionStatus.Pending;
         public virtual ICollection<Bid> Bids { get; set; } = new List<Bid>();
     }
 }
