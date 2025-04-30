@@ -18,7 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Migrations\AuctionDb\" />
     <Folder Include="Migrations\UserDb\" />
+    <Folder Include="wwwroot\images\auctions\" />
   </ItemGroup>
 
 </Project>

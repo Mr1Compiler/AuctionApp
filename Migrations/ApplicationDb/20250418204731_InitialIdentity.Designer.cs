@@ -9,11 +9,16 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace AuctionApp.Migrations.UserDb
+namespace AuctionApp.Migrations.ApplicationDb
 {
     [DbContext(typeof(ApplicationDbContext))]
+<<<<<<<< HEAD:Migrations/ApplicationDb/20250430122039_AddStatusColumn.Designer.cs
     [Migration("20250430122039_AddStatusColumn")]
     partial class AddStatusColumn
+========
+    [Migration("20250418204731_InitialIdentity")]
+    partial class InitialIdentity
+>>>>>>>> Images:Migrations/ApplicationDb/20250418204731_InitialIdentity.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

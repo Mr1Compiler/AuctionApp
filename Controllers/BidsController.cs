@@ -34,20 +34,24 @@ namespace Lab2Auction.Controllers
             var myBids = await _bidService.GetBidsByUserAsync(User);
             return View("Index", myBids);
         }
-        // Get: Bids/ListBids
-        public async Task<IActionResult> ListBids(int auctionId)
-        {
-            var bids = await _bidService.GetBidsForAuctionAsync(auctionId);
-            var auction = await _auctionService.GetAuctionDetailsAsync(auctionId);
-            if (auction == null)
-            {
-                return NotFound();
-            }
-            ViewBag.Auction = auction;
-            return View(bids);
-        }
-        // GET: Bids/Details/5
-        public async Task<IActionResult> Details(int? id)
+		// Get: Bids/ListBids
+		public async Task<IActionResult> ListBids(int auctionId)
+		{
+			var bids = await _bidService.GetBidsForAuctionAsync(auctionId);
+			var auction = await _auctionService.GetAuctionDetailsAsync(auctionId);
+
+			if (auction == null)
+			{
+				return NotFound();
+			}
+
+			ViewBag.Auction = auction;
+			return View(bids); // ✅ Model is a list of bids
+		}
+
+
+		// GET: Bids/Details/5
+		public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
@@ -120,5 +124,21 @@ namespace Lab2Auction.Controllers
         {
             return (_auctionContext.Bid?.Any(e => e.Id == id)).GetValueOrDefault();
         }
-    }
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> SellToBidder(int auctionId, int bidId)
+		{
+			var userId = _userManager.GetUserId(User); // ✅ get the user ID
+			var success = await _auctionService.SellAuctionToBidderAsync(auctionId, bidId, userId); // ✅ pass it
+
+			if (!success)
+			{
+				return NotFound();
+			}
+			return RedirectToAction("MyAuctions");
+		}
+
+
+	}
 }

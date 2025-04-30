@@ -1,33 +1,50 @@
 ﻿@model IEnumerable<Lab2Auction.Models.Bid>
+
 @{
-	Layout = "~/Views/Shared/_Layout.cshtml";
-	var auction = ViewBag.Auction as Lab2Auction.Models.Auction;
+    var auction = ViewBag.Auction as Lab2Auction.Models.Auction;
 }
-<h2>Bids for @auction?.Name</h2>
+
+<h2>Bidders</h2>
+
 @if (!Model.Any())
 {
-	<p style="color:darkred; font-weight:500; font-size:x-large; text-align:center">There are no bids available yet for this Auction!</p>
+    <div class="alert alert-warning">No bids yet.</div>
 }
 else
 {
-	<table class="table">
-		<thead>
-			<tr>
-				<th>Amount</th>
-				<th>Bid Date</th>
-				<th>Bidder</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var bid in Model)
-			{
-				<tr>
-					<td>@bid.Amount</td>
-					<td>@bid.BidDate.ToString("g")</td>
-					<td>@bid.UserEmail</td>
-				</tr>
-			}
-		</tbody>
-	</table>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Bidder</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bid in Model)
+            {
+                <tr>
+                    <td>@bid.UserEmail</td>
+                    <td>@bid.Amount</td>
+                    <td>@bid.BidDate.ToString("g")</td>
+                    <td>
+                        @if (!auction.IsSold)
+                        {
+                            <form asp-action="SellToBidder"
+                                  asp-route-auctionId="@auction.Id"
+                                  asp-route-bidId="@bid.Id"
+                                  method="post">
+                                <button type="submit" class="btn btn-sm btn-warning">Sell</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Sold</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
-<a asp-action="Index" asp-controller="Auctions" class="btn btn-primary">Back to Auctions</a>

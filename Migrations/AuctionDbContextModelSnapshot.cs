@@ -4,19 +4,16 @@ using Lab2Auction.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace AuctionApp.Migrations.AuctionDb
+namespace AuctionApp.Migrations
 {
     [DbContext(typeof(AuctionDbContext))]
-    [Migration("20250430123648_AddAuctionStatus")]
-    partial class AddAuctionStatus
+    partial class AuctionDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,6 +21,28 @@ namespace AuctionApp.Migrations.AuctionDb
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("AuctionApp.Models.AuctionImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuctionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId");
+
+                    b.ToTable("AuctionImages");
+                });
 
             modelBuilder.Entity("Lab2Auction.Models.Auction", b =>
                 {
@@ -40,15 +59,15 @@ namespace AuctionApp.Migrations.AuctionDb
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsSold")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("StartingPrice")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
 
                     b.Property<string>("UserEmail")
                         .HasColumnType("nvarchar(max)");
@@ -91,6 +110,17 @@ namespace AuctionApp.Migrations.AuctionDb
                     b.ToTable("Bid");
                 });
 
+            modelBuilder.Entity("AuctionApp.Models.AuctionImage", b =>
+                {
+                    b.HasOne("Lab2Auction.Models.Auction", "Auction")
+                        .WithMany("Images")
+                        .HasForeignKey("AuctionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Auction");
+                });
+
             modelBuilder.Entity("Lab2Auction.Models.Bid", b =>
                 {
                     b.HasOne("Lab2Auction.Models.Auction", "Auction")
@@ -105,6 +135,8 @@ namespace AuctionApp.Migrations.AuctionDb
             modelBuilder.Entity("Lab2Auction.Models.Auction", b =>
                 {
                     b.Navigation("Bids");
+
+                    b.Navigation("Images");
                 });
 #pragma warning restore 612, 618
         }
