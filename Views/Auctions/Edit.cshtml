@@ -1,29 +1,75 @@
-﻿@model Lab2Auction.Models.AuctionEditModel
+﻿@model AuctionApp.ViewModels.AuctionEditModel
 @{
     ViewData["Title"] = "Edit Auction";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    bool hasBids = Model.Bids?.Any() ?? false;
 }
-<h1>@ViewData["Title"]</h1>
+
+<h1 class="mb-4">@ViewData["Title"]</h1>
+
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="col-md-6">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <textarea asp-for="Description" class="form-control"></textarea>
+
+            <div class="form-group mb-3">
+                <label asp-for="Name" class="form-label">Title</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="form-label">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
-            </div> <br />
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="EndDate" class="form-label">End Date</label>
+                <input asp-for="EndDate" class="form-control" type="datetime-local"
+                       readonly="@(hasBids ? "readonly" : null)" />
+                @if (hasBids)
+                {
+                    <small class="text-muted">Cannot change end date after bids have been placed.</small>
+                }
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="form-label">Update Images (optional)</label>
+                <input type="file" name="NewImages" class="form-control" multiple accept="image/*" />
+                <small class="form-text text-muted">Max 3 images, 3MB each.</small>
+            </div>
+
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-info" style="margin-left: 5px;">Back to List</a>
+                <input type="submit" value="Save Changes" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">Back to List</a>
             </div>
         </form>
     </div>
+
+    <div class="col-md-6">
+        <h5 class="mb-3">Current Images</h5>
+        @if (Model.Images != null && Model.Images.Any())
+        {
+            <div class="row">
+                @foreach (var img in Model.Images)
+                {
+                    <div class="col-6 mb-3">
+                        <img src="@img.ImagePath" class="img-thumbnail" style="max-height: 150px; object-fit: cover; width: 100%;" />
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-light border">No images uploaded yet.</div>
+        }
+    </div>
 </div>
+
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }
 

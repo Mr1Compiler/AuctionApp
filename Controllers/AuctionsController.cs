@@ -8,6 +8,7 @@ using AuctionApp.Areas.Identity.Data;
 using AuctionApp.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using AuctionApp.Enums;
+
 namespace Lab2Auction.Controllers
 {
 	[Authorize]
@@ -167,45 +168,79 @@ namespace Lab2Auction.Controllers
 		//	var myAuctions = await _auctionService.GetAuctionsByUserIdAsync(userId);
 		//	return View("Index", myAuctions);
 		//}
+
+
 		// GET: Auctions/Edit/5
-		public async Task<IActionResult> Edit(int? id)
+		[HttpGet]
+		public async Task<IActionResult> Edit(int id)
 		{
-			if (id == null)
+			var auction = await _auctionContext.Auction
+				.Include(a => a.Images)
+				.Include(a => a.Bids)
+				.FirstOrDefaultAsync(a => a.Id == id);
+
+			if (auction == null) return NotFound();
+
+			var vm = new AuctionApp.ViewModels.AuctionEditModel
 			{
-				return NotFound();
-			}
-			var auction = await _auctionService.GetAuctionDetailsAsync(id.Value);
-			if (auction == null || auction.UserId != _userManager.GetUserId(User))
-			{
-				return NotFound();
-			}
-			if (auction.EndDate <= DateTime.Now)
-			{
-				return Forbid();
-			}
-			return View(new AuctionEditModel { Id = auction.Id, Description = auction.Description });
+				Id = auction.Id,
+				Name = auction.Name,
+				Description = auction.Description,
+				EndDate = auction.EndDate,
+				Images = auction.Images.ToList(),
+				Bids = auction.Bids.ToList()
+			};
+
+			return View(vm);
 		}
-		// POST: Auctions/Edit/5
+
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(int id, [Bind("Id,Description")] AuctionEditModel model)
+		public async Task<IActionResult> Edit(AuctionApp.ViewModels.AuctionEditModel model)
 		{
-			if (id != model.Id)
+			var auction = await _auctionContext.Auction
+				.Include(a => a.Images)
+				.Include(a => a.Bids)
+				.FirstOrDefaultAsync(a => a.Id == model.Id);
+
+			if (auction == null) return NotFound();
+
+			if (!ModelState.IsValid) return View(model);
+
+			auction.Name = model.Name;
+			auction.Description = model.Description;
+
+			if (!auction.Bids.Any())
 			{
-				return NotFound();
+				auction.EndDate = model.EndDate;
 			}
-			if (ModelState.IsValid)
+
+			// Handle image uploads
+			if (model.NewImages != null && model.NewImages.Count > 0)
 			{
-				var userId = _userManager.GetUserId(User);
-				var success = await _auctionService.UpdateAuctionAsync(model, userId);
-				if (!success)
+				foreach (var file in model.NewImages)
 				{
-					return NotFound();
+					if (file.Length > 0)
+					{
+						var fileName = Path.GetFileNameWithoutExtension(Path.GetRandomFileName()) + Path.GetExtension(file.FileName);
+						var path = Path.Combine("wwwroot/images", fileName);
+
+						using (var stream = new FileStream(path, FileMode.Create))
+						{
+							await file.CopyToAsync(stream);
+						}
+
+						auction.Images.Add(new AuctionImage { AuctionId = auction.Id, ImagePath = "/images/" + fileName });
+					}
 				}
-				return RedirectToAction(nameof(Index));
 			}
-			return View(model);
+
+			await _auctionContext.SaveChangesAsync();
+			return RedirectToAction("MyAuctions");
 		}
+
+
+
 		// GET: Auctions/Delete/5
 		public async Task<IActionResult> Delete(int? id)
 		{
@@ -238,6 +273,8 @@ namespace Lab2Auction.Controllers
 			}
 			return RedirectToAction(nameof(Index));
 		}
+
+
 		// GET: Auctions/WonAuctions
 		public async Task<IActionResult> WonAuctions(string? search, int page = 1)
 		{
