@@ -14,6 +14,7 @@ public class AdminController : Controller
 	private readonly UserManager<AccountUser> _userManager;
 	private readonly AdminLogService _logService;
 
+
 	public AdminController(AuctionDbContext context, ApplicationDbContext appContext, UserManager<AccountUser> userManager, AdminLogService logService)
 	{
 		_context = context;
@@ -23,6 +24,28 @@ public class AdminController : Controller
 	}
 	public async Task<IActionResult> Dashboard()
 	{
+		ViewBag.TotalAuctions = await _context.Auction.CountAsync();
+		ViewBag.ApprovedAuctions = await _context.Auction.CountAsync(a => a.Status == AuctionStatus.Approved);
+		ViewBag.PendingAuctions = await _context.Auction.CountAsync(a => a.Status == AuctionStatus.Pending);
+		ViewBag.TotalUsers = await _userManager.Users.CountAsync();
+
+		ViewBag.RecentAuctions = await _context.Auction
+			.OrderByDescending(a => a.Id)
+			.Take(5)
+			.ToListAsync();
+
+		ViewBag.RecentUsers = await _userManager.Users
+			.OrderByDescending(u => u.Id)
+			.Take(5)
+			.ToListAsync();
+
+		ViewBag.RecentLogs = await _appContext.AdminLogs
+			.Include(l => l.Admin)
+			.Include(l => l.AffectedUser)
+			.OrderByDescending(l => l.TimeStamp)
+			.Take(5)
+			.ToListAsync();
+
 		return View();
 	}
 

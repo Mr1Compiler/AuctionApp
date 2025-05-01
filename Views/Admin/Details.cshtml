@@ -26,10 +26,12 @@
         {
             <div class="col-md-4 col-sm-6 mb-4">
                 <div class="card h-100 shadow-sm">
-                    <div style="height: 250px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
-                        <img src="@image.ImagePath" alt="Auction Image"
-                             style="max-height: 100%; max-width: 100%; object-fit: contain;" />
-                    </div>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="@image.ImagePath">
+                        <div style="height: 250px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                            <img src="@image.ImagePath" alt="Auction Image"
+                                 style="max-height: 100%; max-width: 100%; object-fit: contain;" />
+                        </div>
+                    </a>
                 </div>
             </div>
         }
@@ -42,6 +44,17 @@ else
     </div>
 }
 
+<!-- Bootstrap Modal for Image Preview -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" alt="Full Image" style="width: 100%; height: auto;" />
+            </div>
+        </div>
+    </div>
+</div>
+
 @{
     var returnUrl = Context.Request.Headers["Referer"].ToString();
 }
@@ -52,3 +65,16 @@ else
         <a href="@returnUrl" class="btn btn-secondary">← Back</a>
     </div>
 }
+
+@section Scripts {
+    <script>
+        const imageModal = document.getElementById('imageModal');
+        imageModal.addEventListener('show.bs.modal', function (event) {
+            const trigger = event.relatedTarget;
+            const imageUrl = trigger.getAttribute('data-img');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imageUrl;
+        });
+    </script>
+}
+

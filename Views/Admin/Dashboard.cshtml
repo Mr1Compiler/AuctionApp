@@ -1,20 +1,136 @@
-@{
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
+<h2 class="mb-4">📊 Admin Dashboard</h2>
 
-@{
-    ViewData["Title"] = "Admin Dashboard";
+<!-- Stats Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0" style="background: #1e88e5; color: white;">
+            <div class="card-body">
+                <h5 class="card-title">Total Auctions</h5>
+                <p class="display-6 fw-bold">@ViewBag.TotalAuctions</p>
+                <a href="/Admin/Auctions" class="btn btn-outline-light btn-sm rounded-pill px-3 mt-2">
+                    <i class="bi bi-box"></i> View Auctions
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0" style="background: #43a047; color: white;">
+            <div class="card-body">
+                <h5 class="card-title">Approved Auctions</h5>
+                <p class="display-6 fw-bold">@ViewBag.ApprovedAuctions</p>
+                <a href="/Admin/Auctions?status=Approved" class="btn btn-outline-light btn-sm rounded-pill px-3 mt-2">
+                    <i class="bi bi-check-circle"></i> View Approved
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0" style="background: #fbc02d; color: #333;">
+            <div class="card-body">
+                <h5 class="card-title">Pending Auctions</h5>
+                <p class="display-6 fw-bold">@ViewBag.PendingAuctions</p>
+                <a href="/Admin/PendingAuctions" class="btn btn-dark btn-sm rounded-pill px-3 mt-2">
+                    <i class="bi bi-hourglass-split"></i> Review Pending
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0" style="background: #00bcd4; color: white;">
+            <div class="card-body">
+                <h5 class="card-title">Total Users</h5>
+                <p class="display-6 fw-bold">@ViewBag.TotalUsers</p>
+                <a href="/Admin/Users" class="btn btn-outline-light btn-sm rounded-pill px-3 mt-2">
+                    <i class="bi bi-people"></i> View Users
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Logs -->
+@if (ViewBag.RecentLogs is List<AuctionApp.Models.AdminLog> logs && logs.Any())
+{
+    <div class="row">
+        <!-- Admin Logs Table -->
+        <div class="col-md-12 mb-5">
+            <h4><i class="bi bi-clock-history me-2"></i>Recent Admin Logs</h4>
+            <div class="table-responsive shadow-sm">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Action</th>
+                            <th>Target ID</th>
+                            <th>User</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in logs)
+                        {
+                            <tr>
+                                <td>@log.Action</td>
+                                <td>@log.ActionId</td>
+                                <td>@log.AffectedUser?.Email</td>
+                                <td>
+                                    <span class="badge bg-@((log.Status == AuctionApp.Enums.LogStatus.Success) ? "success" : "danger")">
+                                        @log.Status
+                                    </span>
+                                </td>
+                                <td>@log.Notes</td>
+                                <td>@log.TimeStamp.ToString("g")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Auctions Table -->
+        <div class="col-md-12">
+            <h4><i class="bi bi-box-seam me-2"></i>Recent Auctions</h4>
+            <div class="table-responsive shadow-sm">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Name</th>
+                            <th>Owner</th>
+                            <th>Status</th>
+                            <th>End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var auc in ViewBag.RecentAuctions as List<Lab2Auction.Models.Auction>)
+                        {
+                            <tr>
+                                <td>@auc.Name</td>
+                                <td>@auc.UserEmail</td>
+                                <td>
+                                    <span class="badge bg-@(
+                                        auc.Status == AuctionApp.Enums.AuctionStatus.Approved ? "success" :
+                                        auc.Status == AuctionApp.Enums.AuctionStatus.Pending ? "warning text-dark" :
+                                        auc.Status == AuctionApp.Enums.AuctionStatus.Rejected ? "danger" :
+                                        auc.Status == AuctionApp.Enums.AuctionStatus.Sold ? "info" : "secondary"
+                                    )">@auc.Status</span>
+                                </td>
+                                <td>@auc.EndDate.ToString("yyyy-MM-dd hh:mm tt")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">No recent logs to show.</div>
 }
 
-<h1>Welcome to the Admin Dashboard</h1>
-
-<p>This is a test page to confirm that admin access is working.</p>
-
-<ul>
-    <li>Pending Auctions: <strong>5</strong></li>
-    <li>Total Users: <strong>20</strong></li>
-    <li>Blocked Users: <strong>2</strong></li>
-</ul>
-
-<p><a asp-controller="Home" asp-action="Index">Return to Site</a></p>
