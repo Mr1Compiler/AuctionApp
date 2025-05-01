@@ -22,7 +22,48 @@ namespace AuctionApp.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("AuctionApp.Models.AuctionImage", b =>
+            modelBuilder.Entity("Lab2Auction.Models.Auction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("StartingPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("WinningBidId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WinningBidId");
+
+                    b.ToTable("Auction");
+                });
+
+            modelBuilder.Entity("Lab2Auction.Models.AuctionImage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -42,42 +83,6 @@ namespace AuctionApp.Migrations
                     b.HasIndex("AuctionId");
 
                     b.ToTable("AuctionImages");
-                });
-
-            modelBuilder.Entity("Lab2Auction.Models.Auction", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsSold")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("StartingPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("UserEmail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Auction");
                 });
 
             modelBuilder.Entity("Lab2Auction.Models.Bid", b =>
@@ -110,7 +115,16 @@ namespace AuctionApp.Migrations
                     b.ToTable("Bid");
                 });
 
-            modelBuilder.Entity("AuctionApp.Models.AuctionImage", b =>
+            modelBuilder.Entity("Lab2Auction.Models.Auction", b =>
+                {
+                    b.HasOne("Lab2Auction.Models.Bid", "WinningBid")
+                        .WithMany()
+                        .HasForeignKey("WinningBidId");
+
+                    b.Navigation("WinningBid");
+                });
+
+            modelBuilder.Entity("Lab2Auction.Models.AuctionImage", b =>
                 {
                     b.HasOne("Lab2Auction.Models.Auction", "Auction")
                         .WithMany("Images")

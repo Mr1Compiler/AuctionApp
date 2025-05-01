@@ -1,6 +1,7 @@
 ﻿using Lab2Auction.Data;
 using Lab2Auction.Models;
 using Microsoft.EntityFrameworkCore;
+using AuctionApp.Enums;	
 namespace Lab2Auction.Services
 {
 	public class AuctionService : IAuctionService
@@ -14,7 +15,7 @@ namespace Lab2Auction.Services
 		public async Task<List<Auction>> GetOngoingAuctionsAsync()
 		{
 			return await _auctionContext.Auction
-				.Include(a => a.Images) // ✅ include images
+				.Include(a => a.Images) // include images
 				.Where(a => a.EndDate > DateTime.Now)
 				.OrderBy(a => a.EndDate)
 				.ToListAsync();
@@ -24,8 +25,8 @@ namespace Lab2Auction.Services
 		{
 			return await _auctionContext.Auction
 				.Include(a => a.Bids.OrderByDescending(b => b.Amount))
-				.Include(a => a.Images) // ✅ include images
-				.FirstOrDefaultAsync(m => m.Id == auctionId); // ❌ removed the EndDate filter
+				.Include(a => a.Images) // include images
+				.FirstOrDefaultAsync(m => m.Id == auctionId); // removed the EndDate filter
 		}
 
 
@@ -39,7 +40,7 @@ namespace Lab2Auction.Services
 		public async Task<List<Auction>> GetAuctionsByUserIdAsync(string userId)
 		{
 			return await _auctionContext.Auction
-				.Include(a => a.Images) // <-- Include this line!
+				.Include(a => a.Images) 
 				.Where(a => a.UserId == userId && a.EndDate > DateTime.Now)
 				.OrderByDescending(a => a.EndDate)
 				.ToListAsync();
@@ -78,12 +79,12 @@ namespace Lab2Auction.Services
 		{
 			return await _auctionContext.Auction
 				.Include(a => a.Bids)
-				.Where(a => a.EndDate <= DateTime.Now &&
-							a.Bids.Any(b => b.UserId == userId) &&
-							a.Bids.OrderByDescending(b => b.Amount).FirstOrDefault().UserId == userId)
-				.OrderByDescending(a => a.EndDate)
+				.Where(a =>
+					a.Status == AuctionStatus.Sold &&
+					a.Bids.OrderByDescending(b => b.Amount).FirstOrDefault().UserId == userId)
 				.ToListAsync();
 		}
+
 
 		public async Task<bool> SellAuctionAsync(int auctionId, string userId)
 		{
@@ -91,10 +92,10 @@ namespace Lab2Auction.Services
 				.Include(a => a.Bids)
 				.FirstOrDefaultAsync(a => a.Id == auctionId && a.UserId == userId);
 
-			if (auction == null || auction.EndDate > DateTime.Now || auction.IsSold || !auction.Bids.Any())
+			if (auction == null || auction.EndDate > DateTime.Now || auction.Status == AuctionStatus.Sold || !auction.Bids.Any())
 				return false;
 
-			auction.IsSold = true;
+			auction.Status = AuctionStatus.ApprovalPending; // Wait for admin approval
 			await _auctionContext.SaveChangesAsync();
 			return true;
 		}
@@ -105,19 +106,24 @@ namespace Lab2Auction.Services
 				.Include(a => a.Bids)
 				.FirstOrDefaultAsync(a => a.Id == auctionId && a.UserId == userId);
 
-			if (auction == null || auction.IsSold)
+			if (auction == null || auction.Status == AuctionStatus.Sold)
 				return false;
 
 			var bid = auction.Bids.FirstOrDefault(b => b.Id == bidId);
 			if (bid == null)
 				return false;
 
-			auction.IsSold = true;
-			// Optional: auction.WinningBidId = bidId;  <-- if you track this
-
+			auction.Status = AuctionStatus.ApprovalPending;
 			await _auctionContext.SaveChangesAsync();
 			return true;
 		}
 
+		public IQueryable<Auction> GetUserAuctionsQuery(string userId)
+		{
+			return _auctionContext.Auction
+				.Where(a => a.UserId == userId)
+				.Include(a => a.Images)
+				.Include(a => a.Bids);
+		}
 	}
 }

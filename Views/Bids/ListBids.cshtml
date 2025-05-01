@@ -1,5 +1,5 @@
 ﻿@model IEnumerable<Lab2Auction.Models.Bid>
-
+@using AuctionApp.Enums
 @{
     var auction = ViewBag.Auction as Lab2Auction.Models.Auction;
 }
@@ -29,7 +29,7 @@ else
                     <td>@bid.Amount</td>
                     <td>@bid.BidDate.ToString("g")</td>
                     <td>
-                        @if (!auction.IsSold)
+                        @if (!(auction.Status == AuctionStatus.Sold))
                         {
                             <form asp-action="SellToBidder"
                                   asp-route-auctionId="@auction.Id"

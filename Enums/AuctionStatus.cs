@@ -6,6 +6,7 @@
 		Approved,
 		Rejected,
 		Cancelled,
-		Sold
+		Sold,
+		ApprovalPending
 	}
 }

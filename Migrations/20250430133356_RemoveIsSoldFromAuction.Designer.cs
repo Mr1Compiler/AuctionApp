@@ -12,13 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuctionApp.Migrations
 {
     [DbContext(typeof(AuctionDbContext))]
-<<<<<<<< HEAD:Migrations/20250430123648_AddAuctionStatus.Designer.cs
-    [Migration("20250430123648_AddAuctionStatus")]
-    partial class AddAuctionStatus
-========
-    [Migration("20250418204426_InitialCreate")]
-    partial class InitialCreate
->>>>>>>> Images:Migrations/20250418204426_InitialCreate.Designer.cs
+    [Migration("20250430133356_RemoveIsSoldFromAuction")]
+    partial class RemoveIsSoldFromAuction
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -29,28 +24,6 @@ namespace AuctionApp.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("AuctionApp.Models.AuctionImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AuctionId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ImagePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuctionId");
-
-                    b.ToTable("AuctionImages");
-                });
 
             modelBuilder.Entity("Lab2Auction.Models.Auction", b =>
                 {
@@ -88,6 +61,28 @@ namespace AuctionApp.Migrations
                     b.ToTable("Auction");
                 });
 
+            modelBuilder.Entity("Lab2Auction.Models.AuctionImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuctionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId");
+
+                    b.ToTable("AuctionImages");
+                });
+
             modelBuilder.Entity("Lab2Auction.Models.Bid", b =>
                 {
                     b.Property<int>("Id")
@@ -118,7 +113,7 @@ namespace AuctionApp.Migrations
                     b.ToTable("Bid");
                 });
 
-            modelBuilder.Entity("AuctionApp.Models.AuctionImage", b =>
+            modelBuilder.Entity("Lab2Auction.Models.AuctionImage", b =>
                 {
                     b.HasOne("Lab2Auction.Models.Auction", "Auction")
                         .WithMany("Images")

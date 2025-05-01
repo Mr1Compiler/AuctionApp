@@ -1,0 +1,73 @@
+@model IEnumerable<Lab2Auction.Models.Auction>
+@using AuctionApp.Enums
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "All Auctions";
+}
+
+<h2 class="mb-4">All Auctions</h2>
+
+<!-- Search Box -->
+<form method="get" class="mb-3 d-flex" role="search">
+    <input type="text" name="search" class="form-control me-2" placeholder="Search by name..." value="@ViewBag.Search" />
+    <button type="submit" class="btn btn-outline-primary">Search</button>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">No auctions found.</div>
+}
+else
+{
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>Owner</th>
+                <th>Status</th>
+                <th>Start Price</th>
+                <th>End Date</th>
+                <th>Image</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var auction in Model)
+            {
+                string badgeClass = auction.Status switch
+                {
+                    AuctionStatus.Approved => "bg-success",
+                    AuctionStatus.Pending => "bg-warning text-dark",
+                    AuctionStatus.Rejected => "bg-danger",
+                    AuctionStatus.Cancelled => "bg-secondary",
+                    AuctionStatus.Sold => "bg-info text-dark",
+                    AuctionStatus.ApprovalPending => "bg-warning text-dark",
+                    _ => "bg-light text-dark"
+                };
+
+                <tr>
+                    <td>@auction.Name</td>
+                    <td>@auction.UserEmail</td>
+                    <td><span class="badge @badgeClass">@auction.Status</span></td>
+                    <td>$@auction.StartingPrice</td>
+                    <td>@auction.EndDate.ToString("yyyy-MM-dd hh:mm tt")</td>
+                    <td>
+                        <img src="@(auction.Images?.FirstOrDefault()?.ImagePath ?? "/images/Default.png")"
+                             style="height: 60px; width: 60px; object-fit: cover;" class="img-thumbnail" />
+                    </td>
+                    <td class="d-flex gap-1">
+                        <a asp-action="Details" asp-controller="Admin" asp-route-id="@auction.Id" class="btn btn-sm btn-primary">View</a>
+
+                        @if (auction.Status != AuctionStatus.Cancelled && auction.Status != AuctionStatus.Sold)
+                        {
+                            <form asp-action="CancelAuction" asp-controller="Admin" asp-route-id="@auction.Id" method="post" onsubmit="return confirm('Are you sure you want to cancel this auction?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

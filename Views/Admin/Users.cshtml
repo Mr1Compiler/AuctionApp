@@ -1,0 +1,73 @@
+@model IEnumerable<AuctionApp.Areas.Identity.Data.AccountUser>
+@using AuctionApp.Enums
+@{
+    ViewData["Title"] = "Users";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2 class="mb-3">All Users</h2>
+
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <input name="search" value="@ViewBag.SearchTerm" class="form-control" placeholder="Search by username or email" />
+    </div>
+    <div class="col-md-4">
+        <select name="status" class="form-select">
+            <option value="">All Statuses</option>
+            @foreach (var s in Enum.GetValues(typeof(UserStatus)))
+            {
+                <option value="@s" selected="@(s.ToString() == ViewBag.StatusFilter?.ToString() ? "selected" : null)">@s</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <button class="btn btn-primary">Filter</button>
+    </div>
+</form>
+
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Role</th>
+            <th>Change Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.UserName</td>
+                <td>@user.Email</td>
+                <td><span class="badge bg-secondary">@user.Status</span></td>
+                <td>
+                    @if (User.IsInRole("Admin") && user.UserName == "admin@yourdomain.com")
+                    {
+                        <span class="badge bg-dark">Admin</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-info">User</span>
+                    }
+                </td>
+                <td>
+                    <form asp-action="ChangeStatus" method="post" class="d-flex gap-2">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <select name="newStatus" class="form-select form-select-sm">
+                            @foreach (var s in Enum.GetValues(typeof(UserStatus)))
+                            {
+                                <option value="@s" selected="@(user.Status == (UserStatus)s ? "selected" : null)">
+                                    @s
+                                </option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-warning">Update</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Lab2Auction.Services;
 using Microsoft.AspNetCore.Identity;
 using AuctionApp.Areas.Identity.Data;
-using AuctionApp.Models;
 using AuctionApp.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using AuctionApp.Enums;
 namespace Lab2Auction.Controllers
 {
 	[Authorize]
@@ -23,11 +23,50 @@ namespace Lab2Auction.Controllers
 			_userManager = userManager;
 		}
 		// GET: Auctions / list ongoing auctions        
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(string? search, int page = 1, string type = "browse")
 		{
-			var ongoingAuctions = await _auctionService.GetOngoingAuctionsAsync();
-			ViewData["Title"] = "Browse Auctions";
-			return View(ongoingAuctions);
+			ViewData["Title"] = type == "my" ? "My Auctions" : "Browse Auctions";
+
+			var query = _auctionContext.Auction
+				.Include(a => a.Images)
+				.Include(a => a.Bids)
+				.AsQueryable();
+
+			var userId = _userManager.GetUserId(User);
+
+			if (type == "my")
+			{
+			query = query.Where(a => a.Status == AuctionStatus.Approved && a.UserId != userId);
+				}
+			else
+			{
+				// Show all approved auctions regardless of owner
+				query = query.Where(a => a.Status == AuctionStatus.Approved);
+			}
+
+			if (!string.IsNullOrWhiteSpace(search))
+			{
+				query = query.Where(a => a.Name.Contains(search));
+			}
+
+			int totalCount = await query.CountAsync();
+			int pageSize = 10;
+
+			var auctions = await query
+				.OrderByDescending(a => a.EndDate)
+				.Skip((page - 1) * pageSize)
+				.Take(pageSize)
+				.ToListAsync();
+
+			var vm = new AuctionListViewModel
+			{
+				Auctions = auctions,
+				SearchQuery = search,
+				CurrentPage = page,
+				TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+			};
+
+			return View("Index", vm);
 		}
 
 		public async Task<Auction?> GetAuctionDetailsAsync(int auctionId)
@@ -120,14 +159,14 @@ namespace Lab2Auction.Controllers
 			return View(model);
 		}
 
-		// GET: Auctions/MyAuctions
-		public async Task<IActionResult> MyAuctions()
-		{
-			var userId = _userManager.GetUserId(User);
-			ViewData["Title"] = "My Auctions";
-			var myAuctions = await _auctionService.GetAuctionsByUserIdAsync(userId);
-			return View("Index", myAuctions);
-		}
+		//// GET: Auctions/MyAuctions
+		//public async Task<IActionResult> MyAuctions()
+		//{
+		//	var userId = _userManager.GetUserId(User);
+		//	ViewData["Title"] = "My Auctions";
+		//	var myAuctions = await _auctionService.GetAuctionsByUserIdAsync(userId);
+		//	return View("Index", myAuctions);
+		//}
 		// GET: Auctions/Edit/5
 		public async Task<IActionResult> Edit(int? id)
 		{
@@ -203,9 +242,10 @@ namespace Lab2Auction.Controllers
 		public async Task<IActionResult> WonAuctions()
 		{
 			var userId = _userManager.GetUserId(User);
-			ViewData["Title"] = "Won Auctions";
 			var wonAuctions = await _auctionService.GetWonAuctionsByUserIdAsync(userId);
-			return View("Index", wonAuctions);
+
+			ViewData["Title"] = "Won Auctions";
+			return View("Index", wonAuctions); // Reuse your card UI
 		}
 
 		private bool AuctionExists(int id)
@@ -229,6 +269,35 @@ namespace Lab2Auction.Controllers
 
 			return RedirectToAction("ListBids", new { auctionId = auctionId });
 		}
+
+
+		public async Task<IActionResult> MyAuctions(string? search, int page = 1)
+		{
+			int pageSize = 10;
+			var userId = _userManager.GetUserId(User);
+			var query = _auctionService.GetUserAuctionsQuery(userId);
+
+			if (!string.IsNullOrEmpty(search))
+				query = query.Where(a => a.Name.Contains(search));
+
+			var totalCount = await query.CountAsync();
+			var auctions = await query
+				.OrderByDescending(a => a.EndDate)
+				.Skip((page - 1) * pageSize)
+				.Take(pageSize)
+				.ToListAsync();
+
+			ViewData["Title"] = "My Auctions";
+
+			return View("Index", new AuctionListViewModel
+			{
+				Auctions = auctions,
+				CurrentPage = page,
+				TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+				SearchQuery = search
+			});
+		}
+
 
 	}
 }
