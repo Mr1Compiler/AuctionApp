@@ -138,12 +138,33 @@ public class AdminController : Controller
 	[HttpPost]
 	public async Task<IActionResult> ChangeStatus(string userId, UserStatus newStatus)
 	{
-		var user = await _userManager.FindByIdAsync(userId);
-		if (user == null) return NotFound();
+		var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+		if (user == null)
+		{
+			TempData["Message"] = "User not found.";
+			return RedirectToAction("Users");
+		}
 
 		user.Status = newStatus;
 		await _userManager.UpdateAsync(user);
-		return RedirectToAction(nameof(Users));
+
+		// If user is blocked, cancel their unsold auctions
+		if (newStatus == UserStatus.Blocked)
+		{
+			var auctions = await _context.Auction
+				.Where(a => a.UserId == userId && a.Status != AuctionStatus.Sold)
+				.ToListAsync();
+
+			foreach (var auction in auctions)
+			{
+				auction.Status = AuctionStatus.Cancelled;
+			}
+
+			await _context.SaveChangesAsync();
+		}
+
+		TempData["Message"] = $"User status changed to {newStatus}.";
+		return RedirectToAction("Users");
 	}
 
 
