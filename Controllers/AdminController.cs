@@ -1,4 +1,4 @@
-using Lab2Auction.Data;
+﻿using Lab2Auction.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,16 +10,20 @@ using Microsoft.AspNetCore.Identity;
 public class AdminController : Controller
 {
 	private readonly AuctionDbContext _context;
+	private readonly ApplicationDbContext _appContext;
 	private readonly UserManager<AccountUser> _userManager;
+	private readonly AdminLogService _logService;
 
-	public AdminController(AuctionDbContext context, UserManager<AccountUser> userManager)
+	public AdminController(AuctionDbContext context, ApplicationDbContext appContext, UserManager<AccountUser> userManager, AdminLogService logService)
 	{
 		_context = context;
+		_appContext = appContext; 
 		_userManager = userManager;
+		_logService = logService;
 	}
 	public async Task<IActionResult> Dashboard()
-    {
-        return View();
+	{
+		return View();
 	}
 
 	public async Task<IActionResult> Auctions()
@@ -70,6 +74,13 @@ public class AdminController : Controller
 		auction.Status = AuctionStatus.Approved;
 		await _context.SaveChangesAsync();
 
+		await _logService.LogAsync(
+		"Approved Auction",
+		id,
+		auction.UserId,
+		$"Auction '{auction.Name}' approved by admin."
+	);
+
 		return RedirectToAction(nameof(PendingAuctions));
 	}
 
@@ -82,6 +93,13 @@ public class AdminController : Controller
 
 		auction.Status = AuctionStatus.Rejected;
 		await _context.SaveChangesAsync();
+
+		await _logService.LogAsync(
+		"Rejected Auction",
+		id,
+		auction.UserId,
+		$"Auction '{auction.Name}' rejected by admin."
+	);
 
 		return RedirectToAction(nameof(PendingAuctions));
 	}
@@ -145,8 +163,15 @@ public class AdminController : Controller
 
 		auction.Status = AuctionStatus.Sold;
 		auction.WinningBidId = bid.Id;
-
 		await _context.SaveChangesAsync();
+
+		await _logService.LogAsync(
+		"Approved Sell Request",
+		id,
+		auction.UserId,
+		$"Sell to bidder '{bid.UserEmail}' approved."
+		);
+
 		return RedirectToAction("SellApprovals");
 	}
 
@@ -197,4 +222,16 @@ public class AdminController : Controller
 
 		return RedirectToAction(nameof(Auctions));
 	}
+
+	public async Task<IActionResult> Logs()
+	{
+		var logs = await _appContext.AdminLogs
+			.Include(l => l.Admin)
+			.Include(l => l.AffectedUser)
+			.OrderByDescending(l => l.TimeStamp)
+			.ToListAsync();
+
+		return View(logs);
+	}
+
 }

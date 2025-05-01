@@ -1,3 +1,57 @@
+@model IEnumerable<AuctionApp.Models.AdminLog>
+@using AuctionApp.Enums
 @{
+    ViewData["Title"] = "Admin Action Logs";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
+
+<h2 class="mb-4"><i class="bi bi-clipboard-data me-2"></i>Admin Logs</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">No logs found.</div>
+}
+else
+{
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Action</th>
+                <th>Admin</th>
+                <th>Affected User</th>
+                <th>Action ID</th>
+                <th>Status</th>
+                <th>Notes</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in Model)
+            {
+                <tr>
+                    <td>@log.Action</td>
+                    <td>@log.Admin?.UserName</td>
+                    <td>@log.AffectedUser?.UserName</td>
+                    <td>@log.ActionId</td>
+                    <td>
+                        @switch (log.Status)
+                        {
+                            case LogStatus.Success:
+                                <span class="badge bg-success">Success</span>
+                                break;
+                            case LogStatus.Warning:
+                                <span class="badge bg-warning text-dark">Warning</span>
+                                break;
+                            case LogStatus.Failed:
+                                <span class="badge bg-danger">Failed</span>
+                                break;
+                        }
+                    </td>
+                    <td>@log.Notes</td>
+                    <td>@log.TimeStamp.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+

@@ -21,6 +21,9 @@ builder.Services.AddDefaultIdentity<AccountUser>(options =>
 .AddRoles<IdentityRole>() // Enable role support
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// Log Services
+builder.Services.AddScoped<AdminLogService>();
+
 // MVC + Razor Pages
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
