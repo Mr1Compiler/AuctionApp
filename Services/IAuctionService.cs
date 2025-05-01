@@ -13,6 +13,6 @@ namespace Lab2Auction.Services
 		Task<List<Auction>> GetWonAuctionsByUserIdAsync(string userId);
 		Task<bool> SellAuctionToBidderAsync(int auctionId, int bidId, string userId);
         IQueryable<Auction> GetUserAuctionsQuery(string userId);
-
+		Task ProcessEndedAuctionsAsync();
 	}
 }

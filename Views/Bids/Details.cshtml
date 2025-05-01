@@ -1,39 +1,27 @@
 ﻿@model Lab2Auction.Models.Bid
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Bid Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<h1>Details</h1>
-<div>
-    <h4>Bid</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Amount)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Amount)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.BidDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.BidDate)
-        </dd>
-        <dt class="col-sm-2">
-            Auction Name
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Auction.Name)
-        </dd>
-        <dt class="col-sm-2">
-            Auction Owned by
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Auction.UserEmail)
-        </dd>
-    </dl>
+
+<h1 class="mb-4">Bid Details</h1>
+
+<div class="card shadow p-4 mb-4">
+    <h4 class="mb-3">💰 Bid Info</h4>
+    <div class="row">
+        <div class="col-md-6 mb-2">
+            <strong>Amount:</strong> $@Model.Amount
+        </div>
+        <div class="col-md-6 mb-2">
+            <strong>Bid Date:</strong> @Model.BidDate.ToString("yyyy-MM-dd hh:mm tt")
+        </div>
+        <div class="col-md-6 mb-2">
+            <strong>Auction Name:</strong> @Model.Auction?.Name
+        </div>
+        <div class="col-md-6 mb-2">
+            <strong>Auction Owner:</strong> @Model.Auction?.UserEmail
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="MyBids" class="btn btn-info">Back to List</a>
-</div>
+
+<a asp-action="MyBids" class="btn btn-outline-primary">← Back to My Bids</a>

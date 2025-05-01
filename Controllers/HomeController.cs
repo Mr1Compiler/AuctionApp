@@ -1,8 +1,11 @@
-using AuctionApp.Areas.Identity.Data;
+﻿using AuctionApp.Areas.Identity.Data;
 using AuctionApp.Models;
+using Lab2Auction.Data;
+using Lab2Auction.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Drawing.Printing;
 
 namespace AuctionApp.Controllers
 {
@@ -10,12 +13,15 @@ namespace AuctionApp.Controllers
 	{
 		private readonly ILogger<HomeController> _logger;
 		private readonly UserManager<AccountUser> _userManager;
+		private readonly AuctionDbContext _context;
+		private readonly IAuctionService _auctionService;
 
-
-		public HomeController(ILogger<HomeController> logger, UserManager<AccountUser> userManager)
+		public HomeController(ILogger<HomeController> logger, UserManager<AccountUser> userManager, AuctionDbContext context, IAuctionService auctionService)
 		{
 			_logger = logger;
 			_userManager = userManager;
+			_context = context;
+			_auctionService = auctionService;
 		}
 
 		public async Task<IActionResult> Index()
@@ -49,5 +55,13 @@ namespace AuctionApp.Controllers
 		{
 			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 		}
+
+		public async Task<IActionResult> RunAuctionExpiration()
+		{
+			await _auctionService.ProcessEndedAuctionsAsync();
+			return Ok("Auctions processed.");
+		}
+
+
 	}
 }

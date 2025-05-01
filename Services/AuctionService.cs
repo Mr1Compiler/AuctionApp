@@ -125,5 +125,31 @@ namespace Lab2Auction.Services
 				.Include(a => a.Images)
 				.Include(a => a.Bids);
 		}
+
+		public async Task ProcessEndedAuctionsAsync()
+		{
+			var now = DateTime.Now; 
+
+			var endedAuctions = await _auctionContext.Auction
+				.Include(a => a.Bids)
+				.Where(a =>
+					a.EndDate <= now &&
+					a.Status == AuctionStatus.Approved &&
+					a.WinningBidId == null &&
+					a.Bids.Any())
+				.ToListAsync();
+
+			foreach (var auction in endedAuctions)
+			{
+				var highestBid = auction.Bids.OrderByDescending(b => b.Amount).FirstOrDefault();
+				if (highestBid != null)
+				{
+					auction.Status = AuctionStatus.ApprovalPending;
+					auction.WinningBidId = highestBid.Id;
+				}
+			}
+			await _auctionContext.SaveChangesAsync();
+		}
+
 	}
 }

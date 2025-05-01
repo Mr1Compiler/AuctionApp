@@ -21,6 +21,9 @@ builder.Services.AddDefaultIdentity<AccountUser>(options =>
 .AddRoles<IdentityRole>() // Enable role support
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+
+builder.Services.AddHostedService<AuctionExpirationService>();
+
 // Log Services
 builder.Services.AddScoped<AdminLogService>();
 

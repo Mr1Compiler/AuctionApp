@@ -3,53 +3,45 @@
     string title = ViewData["Title"]?.ToString() ?? "Bids";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<h1>@title</h1>
+
+<h1 class="mb-4">@title</h1>
+
 @if (!Model.Any())
 {
-    <p style="color:darkred; font-weight:500; font-size:x-large; text-align:center">There are no bids available yet!</p>
+    <div class="alert alert-warning text-center fs-5">
+        There are no bids available yet!
+    </div>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.First().Amount)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.First().BidDate)
-                </th>
-                <th>
-                    Auction Name
-                </th>
-                @if (title == "My Bids")
-                {
-                    <th>Actions</th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var bid in Model)
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => bid.Amount)
-                    </td>
-                    <td>
-                        @bid.BidDate.ToString("g")
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => bid.Auction.Name)
-                    </td>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var bid in Model)
+        {
+            <div class="col">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            💰 $@bid.Amount
+                        </h5>
+                        <p class="card-text text-muted mb-1">
+                            <strong>Bid Date:</strong> @bid.BidDate.ToString("yyyy-MM-dd hh:mm tt")
+                        </p>
+                        <p class="card-text mb-1">
+                            <strong>Auction:</strong> @bid.Auction?.Name
+                        </p>
+                        <p class="card-text">
+                            <strong>Owner:</strong> @bid.Auction?.UserEmail
+                        </p>
+                    </div>
                     @if (title == "My Bids")
                     {
-                        <td>
-                            <a asp-action="Details" asp-route-id="@bid.Id">Details</a> |
-                            <a asp-action="Delete" asp-route-id="@bid.Id">Delete</a>
-                        </td>
+                        <div class="card-footer d-flex justify-content-between">
+                            <a asp-action="Details" asp-route-id="@bid.Id" class="btn btn-sm btn-primary">Details</a>
+                            <a asp-action="Delete" asp-route-id="@bid.Id" class="btn btn-sm btn-danger">Delete</a>
+                        </div>
                     }
-                </tr>
-            }
-        </tbody>
-    </table>
+                </div>
+            </div>
+        }
+    </div>
 }
