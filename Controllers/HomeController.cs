@@ -31,7 +31,7 @@ namespace AuctionApp.Controllers
 				}
 				else
 				{
-					return RedirectToAction("Index", "User");
+					return View();
 				}
 			}
 
