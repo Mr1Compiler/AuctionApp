@@ -24,7 +24,9 @@ namespace Lab2Auction.Controllers
 			_userManager = userManager;
 		}
 		// GET: Auctions / list ongoing auctions        
-		public async Task<IActionResult> Index(string? search, int page = 1, string type = "browse")
+		[HttpGet]
+		[HttpGet]
+		public async Task<IActionResult> Index(string? search, int page = 1, string type = "browse", string sort = "end")
 		{
 			ViewData["Title"] = type == "my" ? "My Auctions" : "Browse Auctions";
 
@@ -35,26 +37,34 @@ namespace Lab2Auction.Controllers
 
 			var userId = _userManager.GetUserId(User);
 
+			// Filter by type
 			if (type == "my")
 			{
-				query = query.Where(a => a.Status == AuctionStatus.Approved && a.UserId != userId);
+				query = query.Where(a => a.UserId == userId);
 			}
 			else
 			{
-				// Show all approved auctions regardless of owner
 				query = query.Where(a => a.Status == AuctionStatus.Approved);
 			}
 
+			// Apply search if provided
 			if (!string.IsNullOrWhiteSpace(search))
 			{
 				query = query.Where(a => a.Name.Contains(search));
 			}
 
-			int totalCount = await query.CountAsync();
+			// Apply sorting
+			query = sort switch
+			{
+				"publish" => query.OrderByDescending(a => a.CreatedAt),
+				_ => query.OrderBy(a => a.EndDate)
+			};
+
+			// Apply pagination AFTER filtering + sorting
 			int pageSize = 12;
+			int totalCount = await query.CountAsync();
 
 			var auctions = await query
-				.OrderByDescending(a => a.EndDate)
 				.Skip((page - 1) * pageSize)
 				.Take(pageSize)
 				.ToListAsync();
@@ -64,20 +74,20 @@ namespace Lab2Auction.Controllers
 				Auctions = auctions,
 				SearchQuery = search,
 				CurrentPage = page,
-				TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+				TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
 			};
 
 			return View("Index", vm);
 		}
 
+
+
 		public async Task<Auction?> GetAuctionDetailsAsync(int auctionId)
 		{
 			return await _auctionContext.Auction
-				.Include(a => a.Images) // ✅ This includes the images
+				.Include(a => a.Images) // This includes the images
 				.FirstOrDefaultAsync(a => a.Id == auctionId);
 		}
-
-
 
 		// GET: Auctions / details / 5
 		public async Task<IActionResult> Details(int? id)

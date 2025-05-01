@@ -26,7 +26,7 @@ public class AdminLogService
 			ActionId = actionId,
 			AffectedUserId = affectedUserId,
 			AdminId = adminId,
-			TimeStamp = DateTime.UtcNow,
+			TimeStamp = DateTime.Now,
 			Status = status,
 			Notes = notes
 		};

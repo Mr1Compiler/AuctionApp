@@ -7,15 +7,21 @@
 	var currentUser = await UserManager.GetUserAsync(User);
 	string title = ViewData["Title"]?.ToString() ?? "Auctions";
 	Layout = "~/Views/Shared/_Layout.cshtml";
+	string sortOption = Context.Request.Query["sort"];
 }
 
 <h1 class="mb-4">@title</h1>
 
 <div class="row mb-3">
 	<div class="col-md-9">
-		<form method="get" class="d-flex">
+		<form method="get" class="d-flex align-items-center">
 			<input type="text" name="search" class="form-control me-2" placeholder="Search by name..." value="@Model.SearchQuery" />
-			<button type="submit" class="btn btn-outline-secondary">Search</button>
+			<select name="sort" class="form-select me-2" onchange="this.form.submit()">
+				<option value="end" selected="@(sortOption == "end")">Sort by End Date</option>
+				<option value="publish" selected="@(sortOption == "publish")">Sort by Publish Date</option>
+
+			</select>
+			<button type="submit" class="btn btn-outline-secondary">Filter</button>
 		</form>
 	</div>
 	<div class="col-md-3 text-md-end mt-2 mt-md-0">
@@ -25,7 +31,6 @@
 		}
 	</div>
 </div>
-
 
 @if (!Model.Auctions.Any())
 {
@@ -37,7 +42,7 @@
 	{
 		@if (title == "Browse Auctions" && item.Status != AuctionStatus.Approved)
 		{
-			continue; // Only skip non-approved auctions
+			continue;
 		}
 
 		var winningBid = item.Bids?.OrderByDescending(b => b.Amount).FirstOrDefault();
@@ -96,20 +101,12 @@
 							<a asp-action="Create" asp-controller="Bids" asp-route-auctionId="@item.Id" class="btn btn-sm btn-success">Bid</a>
 						}
 
-
 						@if (title == "My Auctions")
 						{
 							if (item.Status == AuctionStatus.Approved)
 							{
 								<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning text-white">Edit</a>
 								<a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
-
-								if (item.EndDate <= DateTime.Now && item.Bids?.Any() == true)
-								{
-									@* <form asp-action="Sell" asp-route-id="@item.Id" method="post" class="d-inline"> *@
-									@* 	<button type="submit" class="btn btn-sm btn-warning">Sell</button> *@
-									@* </form> *@
-								}
 							}
 						}
 					</div>
@@ -130,7 +127,7 @@
 			@for (int pageNum = 1; pageNum <= Model.TotalPages; pageNum++)
 			{
 				<li class="page-item @(pageNum == Model.CurrentPage ? "active" : "")">
-					<a class="page-link" href="@Url.Action("Index", new { page = pageNum, search = Model.SearchQuery, type = currentType })">
+					<a class="page-link" href="@Url.Action("Index", new { page = pageNum, search = Model.SearchQuery, type = currentType, sort = sortOption })">
 						@pageNum
 					</a>
 				</li>
@@ -138,4 +135,3 @@
 		</ul>
 	</nav>
 }
-

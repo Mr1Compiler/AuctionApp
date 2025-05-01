@@ -18,6 +18,7 @@ namespace Lab2Auction.Models
 		public DateTime EndDate { get; set; }
 		public string? UserId { get; set; } // string reference to User ID
 		public string? UserEmail { get; set; }
+		public DateTime CreatedAt { get; set; } = DateTime.Now;
 		public AuctionStatus Status { get; set; } = AuctionStatus.Pending;
 		public int? WinningBidId { get; set; } // id of the winning bid
 		[ForeignKey("WinningBidId")]
