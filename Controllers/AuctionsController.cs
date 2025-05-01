@@ -36,8 +36,8 @@ namespace Lab2Auction.Controllers
 
 			if (type == "my")
 			{
-			query = query.Where(a => a.Status == AuctionStatus.Approved && a.UserId != userId);
-				}
+				query = query.Where(a => a.Status == AuctionStatus.Approved && a.UserId != userId);
+			}
 			else
 			{
 				// Show all approved auctions regardless of owner
@@ -50,7 +50,7 @@ namespace Lab2Auction.Controllers
 			}
 
 			int totalCount = await query.CountAsync();
-			int pageSize = 10;
+			int pageSize = 12;
 
 			var auctions = await query
 				.OrderByDescending(a => a.EndDate)
@@ -239,37 +239,48 @@ namespace Lab2Auction.Controllers
 			return RedirectToAction(nameof(Index));
 		}
 		// GET: Auctions/WonAuctions
-		public async Task<IActionResult> WonAuctions()
+		public async Task<IActionResult> WonAuctions(string? search, int page = 1)
 		{
 			var userId = _userManager.GetUserId(User);
-			var wonAuctions = await _auctionService.GetWonAuctionsByUserIdAsync(userId);
+
+			var query = _auctionContext.Auction
+				.Include(a => a.Bids)
+				.Include(a => a.Images)
+				.Where(a =>
+					a.Status == AuctionStatus.Sold &&
+					a.Bids.Any(b => b.UserId == userId &&
+						b.Id == a.WinningBidId))
+				.AsQueryable();
+
+			if (!string.IsNullOrWhiteSpace(search))
+			{
+				query = query.Where(a => a.Name.Contains(search));
+			}
+
+			int totalCount = await query.CountAsync();
+			int pageSize = 10;
+
+			var auctions = await query
+				.OrderByDescending(a => a.EndDate)
+				.Skip((page - 1) * pageSize)
+				.Take(pageSize)
+				.ToListAsync();
 
 			ViewData["Title"] = "Won Auctions";
-			return View("Index", wonAuctions); // Reuse your card UI
+
+			return View("Index", new AuctionListViewModel
+			{
+				Auctions = auctions,
+				SearchQuery = search,
+				CurrentPage = page,
+				TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+			});
 		}
 
 		private bool AuctionExists(int id)
 		{
 			return (_auctionContext.Auction?.Any(e => e.Id == id)).GetValueOrDefault();
 		}
-
-
-		// In BidsController.cs
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> SellToBidder(int auctionId, int bidId)
-		{
-			var userId = _userManager.GetUserId(User);
-			var success = await _auctionService.SellAuctionToBidderAsync(auctionId, bidId, userId);
-
-			if (!success)
-			{
-				return BadRequest(); // or show message
-			}
-
-			return RedirectToAction("ListBids", new { auctionId = auctionId });
-		}
-
 
 		public async Task<IActionResult> MyAuctions(string? search, int page = 1)
 		{
@@ -297,7 +308,5 @@ namespace Lab2Auction.Controllers
 				SearchQuery = search
 			});
 		}
-
-
 	}
 }

@@ -34,26 +34,29 @@ else
                     <td>$@auction.StartingPrice</td>
                     <td>@auction.EndDate.ToString("yyyy-MM-dd hh:mm tt")</td>
                     <td>
-                        @if (auction.Bids != null && auction.Bids.Any())
+                        @if (auction.Bids != null && auction.WinningBidId.HasValue)
                         {
-                            <ul class="list-unstyled">
-                                @foreach (var bid in auction.Bids)
-                                {
-                                    <li class="d-flex justify-content-between align-items-center mb-1">
-                                        <span>@bid.UserEmail - $@bid.Amount</span>
-                                        <form asp-action="ApproveSellWithBid" method="post" class="ms-2"
-                                              asp-route-id="@auction.Id" asp-route-bidId="@bid.Id">
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                <i class="bi bi-check-circle"></i> Approve
-                                            </button>
-                                        </form>
-                                    </li>
-                                }
-                            </ul>
+                            var winningBid = auction.Bids.FirstOrDefault(b => b.Id == auction.WinningBidId);
+                            if (winningBid != null)
+                            {
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>@winningBid.UserEmail - $@winningBid.Amount</span>
+                                    <form asp-action="ApproveSellWithBid" method="post" class="ms-2"
+                                          asp-route-id="@auction.Id" asp-route-bidId="@winningBid.Id">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="bi bi-check-circle"></i> Approve
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Bid info not found</span>
+                            }
                         }
                         else
                         {
-                            <span class="text-muted">No bids</span>
+                            <span class="text-muted">No bid selected</span>
                         }
                     </td>
                     <td><span class="badge bg-warning text-dark">@auction.Status</span></td>

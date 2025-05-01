@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Lab2Auction.Models;
 using AuctionApp.Areas.Identity.Data;
 using AuctionApp.Enums;
+using Microsoft.EntityFrameworkCore;
 namespace Lab2Auction.Controllers
 {
 	[Authorize]
@@ -91,36 +92,68 @@ namespace Lab2Auction.Controllers
 			}
 			return RedirectToAction(nameof(MyBids));
 		}
+
+
 		// GET: Bids/Create
-		public IActionResult Create(int auctionId)
+		[HttpGet]
+		public async Task<IActionResult> Create(int auctionId)
 		{
-			var canPlaceBid = _bidService.CanUserPlaceBidAsync(auctionId, User).Result;
-			if (!canPlaceBid)
+			var userId = _userManager.GetUserId(User);
+
+			var existingBid = await _auctionContext.Bid
+				.FirstOrDefaultAsync(b => b.AuctionId == auctionId && b.UserId == userId);
+
+			if (existingBid != null)
 			{
-				return Forbid();
+				ViewBag.AlreadyBid = true;
+				ViewBag.BidId = existingBid.Id;
+				return View(new Bid { AuctionId = auctionId }); // still pass the model for consistency
 			}
-			var bidModel = new Bid { AuctionId = auctionId };
-			return View(bidModel);
+
+			ViewBag.AlreadyBid = false;
+			return View(new Bid { AuctionId = auctionId });
 		}
+
+
+		// POST: Bids/Create
 		// POST: Bids/Create
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create([Bind("Amount, AuctionId")] Bid bid)
 		{
+			var userId = _userManager.GetUserId(User);
+
+			bool alreadyBid = await _auctionContext.Bid
+				.AnyAsync(b => b.AuctionId == bid.AuctionId && b.UserId == userId);
+
+			if (alreadyBid)
+			{
+				ModelState.AddModelError("", "You have already placed a bid on this auction.");
+				return View(bid);
+			}
+
 			var canPlaceBid = await _bidService.CanUserPlaceBidAsync(bid.AuctionId, User);
 			if (!canPlaceBid)
 			{
 				return Forbid();
 			}
+
 			bid.UserEmail = _userManager.GetUserName(User);
+			bid.UserId = userId;
+
 			var placedBid = await _bidService.PlaceBidAsync(bid, User);
+
 			if (placedBid == null)
 			{
 				ModelState.AddModelError("Amount", "Your bid must be higher than the current highest bid.");
 				return View(bid);
 			}
-			return RedirectToAction("Details", "Auctions", new { id = bid.AuctionId });
+
+			// ✅ Redirect to ListBids
+			return RedirectToAction("ListBids", "Bids", new { auctionId = bid.AuctionId });
 		}
+
+
 		private bool BidExists(int id)
 		{
 			return (_auctionContext.Bid?.Any(e => e.Id == id)).GetValueOrDefault();
@@ -130,23 +163,71 @@ namespace Lab2Auction.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> SellToBidder(int auctionId, int bidId)
 		{
-			var auc = await _auctionContext.Auction.FindAsync(auctionId);
+			var auction = await _auctionContext.Auction
+				.Include(a => a.Bids)
+				.FirstOrDefaultAsync(a => a.Id == auctionId);
 
-			if (auc.Status == AuctionStatus.ApprovalPending)
-			{
-				// Just here u should show an erro or warrning that u already selling
-				// it and wating for an approval from the admin
-			}
-
-		
-			var userId = _userManager.GetUserId(User); // get the user ID
-			var success = await _auctionService.SellAuctionToBidderAsync(auctionId, bidId, userId); // pass it
-
-			if (!success)
-			{
+			if (auction == null || auction.Status == AuctionStatus.Sold)
 				return NotFound();
+
+			if (auction.Status == AuctionStatus.ApprovalPending)
+			{
+				TempData["Message"] = "Already waiting for admin approval.";
+				return RedirectToAction("ListBids", new { auctionId });
 			}
-			return RedirectToAction("MyAuctions");
+
+			var bid = auction.Bids.FirstOrDefault(b => b.Id == bidId);
+			if (bid == null)
+				return NotFound();
+
+			auction.Status = AuctionStatus.ApprovalPending;
+			auction.WinningBidId = bid.Id;
+
+			await _auctionContext.SaveChangesAsync();
+
+			TempData["Message"] = "Auction sent for admin approval.";
+			return RedirectToAction("ListBids", new { auctionId });
+		}
+
+
+		public async Task<IActionResult> Edit(int id)
+		{
+			var bid = await _auctionContext.Bid.FindAsync(id);
+			var userId = _userManager.GetUserId(User);
+
+			if (bid == null || bid.UserId != userId)
+			{
+				return Forbid();
+			}
+
+			return View(bid);
+		}
+
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Edit(int id, [Bind("Id,Amount")] Bid updatedBid)
+		{
+			var bid = await _auctionContext.Bid.FindAsync(id);
+			var userId = _userManager.GetUserId(User);
+
+			if (bid == null || bid.UserId != userId)
+			{
+				return Forbid();
+			}
+
+			// Optional: Prevent lowering the bid
+			if (updatedBid.Amount <= bid.Amount)
+			{
+				ModelState.AddModelError("Amount", "New bid must be higher than the current bid.");
+				return View(bid);
+			}
+
+			bid.Amount = updatedBid.Amount;
+			bid.BidDate = DateTime.Now;
+			await _auctionContext.SaveChangesAsync();
+
+			return RedirectToAction("ListBids", new { auctionId = bid.AuctionId });
 		}
 
 

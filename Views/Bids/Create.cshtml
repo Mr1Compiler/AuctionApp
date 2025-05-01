@@ -1,30 +1,42 @@
 ﻿@model Lab2Auction.Models.Bid
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Bid";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    bool alreadyBid = ViewBag.AlreadyBid ?? false;
+    int? bidId = ViewBag.BidId as int?;
 }
+
 <h1>Create Bid</h1>
-<h4>Enter your bid amount</h4>
-<br />
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create" asp-route-auctionId="@Model.AuctionId">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" class="form-control" />
-                <span asp-validation-for="Amount" class="text-danger"></span>
-            </div> <br />
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-                <a asp-action="Index" asp-controller="Auctions" class="btn btn-info" style="margin-left: 5px;">Back to Auctions</a>
-            </div>
-        </form>
+
+@if (alreadyBid)
+{
+    <div class="alert alert-info">
+        <strong>Note:</strong> You have already placed a bid on this auction.
     </div>
-</div>
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+
+    <a asp-action="Edit" asp-route-id="@bidId" class="btn btn-sm btn-warning mt-2">
+        ✏️ Update Your Bid
+    </a>
+}
+else
+{
+    <h4>Enter your bid amount</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Create" asp-route-auctionId="@Model.AuctionId">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Amount" class="control-label"></label>
+                    <input asp-for="Amount" class="form-control" />
+                    <span asp-validation-for="Amount" class="text-danger"></span>
+                </div>
+                <br />
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                    <a asp-action="Index" asp-controller="Auctions" class="btn btn-info ms-2">Back to Auctions</a>
+                </div>
+            </form>
+        </div>
+    </div>
 }
