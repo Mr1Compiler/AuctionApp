@@ -16,13 +16,15 @@
 	<div class="col-md-9">
 		<form method="get" class="d-flex align-items-center">
 			<input type="text" name="search" class="form-control me-2" placeholder="Search by name..." value="@Model.SearchQuery" />
-			<select name="sort" class="form-select me-2" onchange="this.form.submit()">
+
+			<button type="submit" class="btn btn-outline-secondary me-2">Search</button>
+
+			<select name="sort" class="form-select" onchange="this.form.submit()">
 				<option value="end" selected="@(sortOption == "end")">Sort by End Date</option>
 				<option value="publish" selected="@(sortOption == "publish")">Sort by Publish Date</option>
-
 			</select>
-			<button type="submit" class="btn btn-outline-secondary">Filter</button>
 		</form>
+
 	</div>
 	<div class="col-md-3 text-md-end mt-2 mt-md-0">
 		@if (title == "Browse Auctions")

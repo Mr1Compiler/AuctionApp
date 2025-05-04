@@ -57,7 +57,9 @@
                 @foreach (var img in Model.Images)
                 {
                     <div class="col-6 mb-3">
-                        <img src="@img.ImagePath" class="img-thumbnail" style="max-height: 150px; object-fit: cover; width: 100%;" />
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="@img.ImagePath">
+                            <img src="@img.ImagePath" class="rounded border w-100" style="max-height: 150px; object-fit: contain;" />
+                        </a>
                     </div>
                 }
             </div>
@@ -69,7 +71,26 @@
     </div>
 </div>
 
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-body text-center p-0">
+                <img id="modalImage" src="" alt="Full Image" style="width: 100%; height: auto;" />
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        const imageModal = document.getElementById('imageModal');
+        imageModal.addEventListener('show.bs.modal', function (event) {
+            const trigger = event.relatedTarget;
+            const imageUrl = trigger.getAttribute('data-img');
+            document.getElementById('modalImage').src = imageUrl;
+        });
+    </script>
 }
 
