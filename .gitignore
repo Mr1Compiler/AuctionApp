@@ -361,3 +361,24 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+*.iml
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/dictionaries
+.idea/**/usage.statistics.xml
+.idea/**/dataSources/
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/httpRequests/
+.idea/**/shelf/
+.idea/.idea_modules/
+
+# Visual Studio Code
+.vscode/
