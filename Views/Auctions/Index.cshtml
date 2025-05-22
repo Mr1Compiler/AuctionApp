@@ -42,7 +42,7 @@
 <div class="row row-cols-1 row-cols-md-3 g-4">
 	@foreach (var item in Model.Auctions)
 	{
-		@if (title == "Browse Auctions" && item.Status != AuctionStatus.Approved)
+		@if (title == "Browse Auctions" && item.Status != AuctionStatus.Approved || item.EndDate < DateTime.Now)
 		{
 			continue;
 		}
