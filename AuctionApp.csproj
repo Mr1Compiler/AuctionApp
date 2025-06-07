@@ -7,6 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\ApplicationDb\**" />
+    <Compile Remove="Migrations\UserDb\**" />
+    <Content Remove="Migrations\ApplicationDb\**" />
+    <Content Remove="Migrations\UserDb\**" />
+    <EmbeddedResource Remove="Migrations\ApplicationDb\**" />
+    <EmbeddedResource Remove="Migrations\UserDb\**" />
+    <None Remove="Migrations\ApplicationDb\**" />
+    <None Remove="Migrations\UserDb\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
@@ -18,9 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Migrations\ApplicationDb\" />
-    <Folder Include="Migrations\AuctionDb\" />
-    <Folder Include="Migrations\UserDb\" />
+    <Folder Include="Migrations\" />
     <Folder Include="wwwroot\images\auctions\" />
   </ItemGroup>
 
