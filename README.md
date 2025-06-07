@@ -6,8 +6,6 @@ A full-featured online auction platform built with **ASP.NET Core MVC**. The sys
 
 ## 📸 Project Screenshots
 
-> Replace the image links below (`assets/your_image.png`) with your actual screenshots.
-
 | Feature | Screenshot |
 |--------|------------|
 | Login Page | ![Image](https://github.com/user-attachments/assets/b3cde781-0707-498f-a6e9-23c7c7df170e) |
